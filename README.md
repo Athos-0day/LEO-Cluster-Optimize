@@ -58,13 +58,13 @@ Ce papier explique ce qu'est le clustering et présente les algorithmes existant
 #### Points clés retenus pour le projet :
 
 * Algorithmes Partitionnels (Centroïdes) :
-    K-means : Très efficace avec une complexité de $O(NKd)$. C'est le standard pour les gros jeux de données, bien qu'il puisse converger vers des optima locaux.
-    PAM (K-medoids) : Plus robuste aux bruits mais plus coûteux, avec une complexité de $O(K(N-K)^2)$.
+*    K-means : Très efficace avec une complexité de $O(NKd)$. C'est le standard pour les gros jeux de données, bien qu'il puisse converger vers des optima locaux.
+*    PAM (K-medoids) : Plus robuste aux bruits mais plus coûteux, avec une complexité de $O(K(N-K)^2)$.
 
 * Algorithmes Hiérarchiques :
-    Méthodes classiques : Généralement très gourmandes, avec des complexités allant de $O(N^2)$ à $O(N^3)$, ce qui les limite aux petits jeux de données.
-    BIRCH : Optimisé pour le Big Data grâce à un arbre de caractéristiques, ramenant la complexité à $O(N)$.
-    CURE : Utilise l'échantillonnage pour atteindre $O(N_{s}^2 \log N_{s})$ (où $N_s$ est la taille de l'échantillon).
+*    Méthodes classiques : Généralement très gourmandes, avec des complexités allant de $O(N^2)$ à $O(N^3)$, ce qui les limite aux petits jeux de données.
+*    BIRCH : Optimisé pour le Big Data grâce à un arbre de caractéristiques, ramenant la complexité à $O(N)$.
+*    CURE : Utilise l'échantillonnage pour atteindre $O(N_{s}^2 \log N_{s})$ (où $N_s$ est la taille de l'échantillon).
 * Algorithmes Basés sur la Densité et les Grilles :
-    DBSCAN : Capable de trouver des formes arbitraires. Sa complexité est de $O(N \log N)$ avec des structures spatiales (type R*-tree), mais monte à $O(N^2)$ dans le pire des cas.
-    CLIQUE : Combine densité et grilles pour la haute dimension avec une complexité de $O(N + \text{nombre de cellules})$.
+*    DBSCAN : Capable de trouver des formes arbitraires. Sa complexité est de $O(N \log N)$ avec des structures spatiales (type R*-tree), mais monte à $O(N^2)$ dans le pire des cas.
+*    CLIQUE : Combine densité et grilles pour la haute dimension avec une complexité de $O(N + \text{nombre de cellules})$.
