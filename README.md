@@ -38,7 +38,7 @@ Ce papier analyse l'arbitrage critique entre la **vitesse d'exécution** et l'**
 
 ### État de l'art : Analysis of the Clustering Properties of the Hilbert Space-Filling Curve (2001)
 
-[Article Link](https://www.youtube.com/watch?v=E4WlUXrJgy4)
+[Article Link](https://ieeexplore-ieee-org.gorgone.univ-toulouse.fr/stampPDF/getPDF.jsp?tp=&arnumber=1427769&ref=aHR0cHM6Ly9pZWVleHBsb3JlLmllZWUub3JnL2RvY3VtZW50LzE0Mjc3Njk=&tag=1)
 
 Ce papier démontre l'efficacité de **la courbe de Hilbert** pour les problèmes de clustering. Il étduie les propriétés de clustering de la courbe de remplissage d'espace de Hilbert. Ces courbes permettent de passer d'un espace multidimensionnel à un espace d'une dimension.
 
@@ -50,3 +50,15 @@ Ce papier démontre l'efficacité de **la courbe de Hilbert** pour les problème
 * Alors que des algorithmes comme DBSCAN ou K-Means sont coûteux en calcul, le "Hilbert-Clustering" est d'une rapidité extrême.
 * Chaque utilisateur se voit attribuer un "Hilbert Index" unique. C'est ici que la magie opère : si deux utilisateurs sont dans la même zone géographique de 90 km, leurs indices de Hilbert seront très proches numériquement.
 * On trie la liste des utilisateurs par ordre croissant d'index.
+
+### État de l'art : Survey of Clustering <algorythms (2005)
+
+Ce papier explique ce qu'est le clustering et présente les algorithmes existants.
+
+#### Points clés retenus pour le projet :
+
+* Le clustering est une méthode d'apprentissage non supervisé visant à regrouper des données par similarité sans étiquettes préalables.
+* Il oppose principalement les méthodes hiérarchiques (structure en arbre) aux méthodes partitionnelles comme le K-means ou l'algorithme EM.
+* Des approches avancées intègrent la logique floue, les réseaux de neurones (SOFM, ART) et les algorithmes basés sur la théorie des graphes.
+* Les défis majeurs actuels résident dans le passage à l'échelle pour le Big Data et la validation statistique du nombre de clusters.
+* Ses applications sont cruciales en bioinformatique, notamment pour l'analyse de l'expression génique et le séquençage de l'ADN.
