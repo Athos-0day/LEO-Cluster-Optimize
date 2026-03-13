@@ -51,7 +51,7 @@ Ce papier démontre l'efficacité de **la courbe de Hilbert** pour les problème
 * Chaque utilisateur se voit attribuer un "Hilbert Index" unique. C'est ici que la magie opère : si deux utilisateurs sont dans la même zone géographique de 90 km, leurs indices de Hilbert seront très proches numériquement.
 * On trie la liste des utilisateurs par ordre croissant d'index.
 
-### État de l'art : Survey of Clustering <algorythms (2005)
+### État de l'art : Survey of Clustering Algorythms (2005)
 
 Ce papier explique ce qu'est le clustering et présente les algorithmes existants.
 
