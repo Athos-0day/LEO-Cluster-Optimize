@@ -35,3 +35,18 @@ Ce papier analyse l'arbitrage critique entre la **vitesse d'exécution** et l'**
 * **Gestion de la densité :** Utilisation de logiques type **DBSCAN** pour gérer les zones nécessitant des clusters superposés (jusqu'à 4 Gbps).
 * **Réduction des interférences :** Application de la **coloration de graphe** pour séparer les fréquences des clusters qui se chevauchent.
 * **Optimisation post-calcul :** Les algorithmes génétiques ou le recentrage par centroïdes (K-Means) permettent d'affiner la précision après le prétraitement rapide.
+
+### État de l'art : Analysis of the Clustering Properties of the Hilbert Space-Filling Curve (2001)
+
+[Article Link](https://www.youtube.com/watch?v=E4WlUXrJgy4)
+
+Ce papier démontre l'efficacité de **la courbe de Hilbert** pour les problèmes de clustering. Il étduie les propriétés de clustering de la courbe de remplissage d'espace de Hilbert. Ces courbes permettent de passer d'un espace multidimensionnel à un espace d'une dimension.
+
+#### Points clés retenus pour le projet :
+
+* Les objets proches dans l'espace multidimensionnel sont proches dans l'espace de dimension 1 (Préservation de la localité spatiale).
+* L'article démontre mathématiquement et empiriquement que la courbe de Hilbert surpasse ses concurrentes
+* Si quelques utilisateurs bougent légèrement, leur indice de Hilbert change peu.
+* Alors que des algorithmes comme DBSCAN ou K-Means sont coûteux en calcul, le "Hilbert-Clustering" est d'une rapidité extrême.
+* Chaque utilisateur se voit attribuer un "Hilbert Index" unique. C'est ici que la magie opère : si deux utilisateurs sont dans la même zone géographique de 90 km, leurs indices de Hilbert seront très proches numériquement.
+* On trie la liste des utilisateurs par ordre croissant d'index.
