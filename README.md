@@ -22,11 +22,21 @@ La première question est de se demander comment nous allons traiter les informa
 ### Propositions précédentes des étudiants de l'ENSEEIHT
 
 L'idée du groupe précédant est de réaliser un traitement en trois phases:
-- une phase de prétraitement afin d'éviter de traiter les données comme un bloc monolithique lors de la phase de recherche de clusters (clustering). Il est question de répartir les données en sous-groupe dans le but d'accroître la performance de l'algorithme de clutering et de répondre au critère technique de la performance. 
+1) Une phase de prétraitement (Algorithme de zones connexes) afin d'éviter de traiter les données comme un bloc monolithique lors de la phase de recherche de clusters (clustering). Il est question de répartir les données en sous-groupe dans le but d'accroître la performance de l'algorithme de clutering et de répondre au critère technique de la performance. 
 
 Au départ 87 898 utilisateurs initiaux, l'algorithme génère 4 169 zones connexes.
 
-Cette approche est clairement pertinente afin de réduire le nombre de données à traiter lors de la recherche des clusters afin d'augmenter la performance de l'algorithme. En effet, ce traitement ne se fait qu'à chaque fois qu'il y a un changement dans la base de données et encore on pourrait adapter l'algorithme pour qu'il ne recalcule que les zones concernés mais cela n'est pas l'objectif. On considère une base de données **statiques**. Traitement monolithique implique une précision maximale pour les clusters mais nécessite plus de temps.
+Cette approche est clairement pertinente afin de réduire le nombre d'itérations lors de la recherche des clusters. En effet, ce traitement ne se fait qu'à chaque fois qu'il y a un changement dans la base de données mais pas à chaque période. On considère une base de données **statiques**. Traitement monolithique implique une précision maximale pour les clusters mais nécessite plus de temps.
+
+2) Une phase de Clustering (Algorithme Greedy), qui permet de calculer dynamiquement les centres et d'allouer chaque point de manière optimale au cluster le moins chargé. C'est cette phase qui donne le nombre de clusters et leur contenu.
+
+3) Une phase de Post-traitement, qui consiste à recentrer les clusters (notamment en utilisant un point géographique plutôt qu'appartenant aux données), diminuer le nombre de clusters en ré-allouant certains points (Méthode 2 in 1) et uniformiser le partage de ressources.
+
+### Conclusions
+
+Leur approche nous semble correcte et même excellente en répondant aux besoins spécifiés. Cependant, ils observent deux performances opposées: une optimisation de la répartition des clusters avec un coût de traitement et de ressources élevés, et une répartition plus approximative offrant de meilleurs performances.
+Il est précisé que la solution peut être rendue plus fine grâce aux pré-traitements et post-traitement.
+Nous utiliserons notre état de l'art et les derniers articles sur le sujet pour améliorer cette approche de manière créative.
 
 ### État de l'art : Clustering Strategies in Satellite-Aided Communications (2025)
 
@@ -81,8 +91,6 @@ Ce papier traîte des d'un nouvel algorithme glouton a heurstique permettant un 
 * Extension: on peut combiner cette méthode avec d'autre méthode afin d'améliorer sa complexité notamment en utilisant des heuristiques plus efficaces (mean shift,...)
 
 
-
-
 ### État de l'art : Minimum-Cost Coverage of Point Sets by Disks (2006)
 
 [Article Link](https://arxiv.org/pdf/cs/0604008)
@@ -98,3 +106,12 @@ Cet article étudie l'optimisation du placement de serveurs pour couvrir des poi
 * Adaptabilité : Bien que l'article traite de rayons variables, la logique gloutonne est directement transposable à une contrainte de capacité. Dans notre cas, le rayon est fixe : l'algorithme "sature" le cluster jusqu'au seuil de débit. Une fois la capacité atteinte, les utilisateurs restants sont traités par un nouveau cluster.
 
 * Gestion des superpositions : L'article valide mathématiquement que la superposition totale ou partielle de disques est nécessaire pour atteindre l'optimalité dans les zones à forte densité de points. Cela légitime l'hypothèse de notre énoncé autorisant plusieurs clusters sur un même centre.
+
+
+### Résumé 
+
+En conclusion, nous conservons l'approche classique en y introduisant de nouveaux algorithmes basés sur les besoins:
+
+- Pré-traitement avec du Quadtree ou du KD-Tree (Diviser pour régner 2D) pour améliorer les performances et s'introduire une marge d'amélioration sur les autres phases, en prenant déjà en compte la gestion des zones denses (superposition).
+- Utilisation de l'algorithme Capacity Disk Covering pour le clustering: On cherche le nombre minimum de disques de rayon R (45 km) pour couvrir tous les points, sachant que chaque disque a une "charge" maximale.
+- Notre approche permet d'exécuter efficacement d'autres algortihmes pendant la phase de post-traitement comme le Centroid Shift (Mean Shift) afin de recentrer des clusters déjà formés sur les zones denses. Nous pouvons aussi, gérer les petits clusters et ré-attribuer des ressources.
