@@ -10,6 +10,9 @@
  *
  */
 
+#ifndef CSV_READ_HPP
+#define CSV_READ_HPP
+
 #include <string>
 #include <vector>
 
@@ -33,3 +36,5 @@ struct UserPoint {
  *
  */
 std::vector<UserPoint> CsvToUser(const std::string &filename);
+
+#endif // CSV_READ_HPP

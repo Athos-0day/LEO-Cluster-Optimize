@@ -1,49 +1,62 @@
 #include "csv_read.hpp"
+#include "greedy_disk_clustering.hpp"
+#include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <vector>
+
+/**
+ * @brief Structure pour stocker les résultats d'un test
+ */
+struct BenchResult {
+  std::string strategie;
+  int remplissage;
+  int nb_clusters;
+  double temps_ms;
+};
 
 int main() {
   std::string path = "../data/generated.csv";
-
-  std::cout << "--- Chargement des utilisateurs depuis " << path << " ---"
-            << std::endl;
-
   std::vector<UserPoint> users = CsvToUser(path);
 
-  if (users.empty()) {
-    std::cerr << "Aucun utilisateur charge. Verifiez le chemin ou le contenu "
-                 "du fichier."
-              << std::endl;
+  if (users.empty())
     return 1;
-  }
 
-  std::cout << "Succes ! " << users.size() << " utilisateurs charges.\n"
+  std::vector<Strategie_t> strategies = {PESSIMISTE, OPTIMISTE, OVERBOOKING};
+  std::vector<std::string> str_names = {"Pessimiste", "Optimiste",
+                                        "Overbooking"};
+  std::vector<int> taux_remplissage = {80, 90, 100};
+
+  std::vector<BenchResult> results;
+
+  std::cout << "--- Demarrage du Benchmark de Clustering ---" << std::endl;
+  std::cout << std::left << std::setw(15) << "Strat" << std::setw(10) << "Fill%"
+            << std::setw(15) << "Clusters" << std::setw(15) << "Temps (ms)"
             << std::endl;
+  std::cout << std::string(55, '-') << std::endl;
 
-  // Affichage des 5 premiers pour verification
-  std::cout << std::left << std::setw(5) << "ID" << std::setw(12) << "Lat"
-            << std::setw(12) << "Lon" << std::setw(10) << "PIR" << std::setw(10)
-            << "CIR" << std::endl;
-  std::cout << std::string(50, '-') << std::endl;
+  for (size_t s = 0; s < strategies.size(); ++s) {
+    for (int fill : taux_remplissage) {
 
-  double total_pir = 0;
-  int limit = (users.size() < 5) ? users.size() : 5;
+      // Mesure du temps
+      auto start = std::chrono::high_resolution_clock::now();
 
-  for (int i = 0; i < users.size(); ++i) {
-    if (i < limit) {
-      std::cout << std::left << std::setw(5) << users[i].id << std::setw(12)
-                << users[i].lat << std::setw(12) << users[i].lon
-                << std::setw(10) << users[i].pir << std::setw(10)
-                << users[i].cir << std::endl;
+      std::vector<Cluster> clusters =
+          runGreedyClustering(users, strategies[s], fill);
+
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double, std::milli> duration = end - start;
+
+      // Stockage et affichage
+      std::cout << std::left << std::setw(15) << str_names[s] << std::setw(10)
+                << fill << std::setw(15) << clusters.size() << std::setw(15)
+                << duration.count() << std::endl;
+
+      results.push_back(
+          {str_names[s], fill, (int)clusters.size(), duration.count()});
     }
-    total_pir += users[i].pir;
+    std::cout << std::string(55, '-') << std::endl;
   }
-
-  std::cout << std::string(50, '-') << std::endl;
-  std::cout << "Charge totale PIR cumulee : " << total_pir / 1000.0
-            << " Gbps (approx)" << std::endl;
-  std::cout << "Nombre theorique de clusters (si cap=3Gbps) : "
-            << (total_pir / 1000.0) / 3.0 << std::endl;
 
   return 0;
 }
