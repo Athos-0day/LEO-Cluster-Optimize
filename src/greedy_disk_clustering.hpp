@@ -58,4 +58,17 @@ std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
                                          Strategie_t strategie,
                                          int remplissage);
 
+/**
+ * @brief Algorithme de clustering optimisé par Quadtree.
+ * * Cette version utilise une structure spatiale pour limiter la recherche des
+ * voisins aux zones adjacentes. La complexité passe de O(N*K) à O(N log N).
+ * * @param users Liste des points utilisateurs.
+ * @param strategie Choix de la métrique de charge.
+ * @param remplissage Pourcentage max de charge cible.
+ * @return std::vector<Cluster> Vecteur de clusters optimisés.
+ */
+std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
+                                           Strategie_t strategie,
+                                           int remplissage);
+
 #endif // GREEDY_DISK_CLUSTERING_HPP
