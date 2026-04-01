@@ -1,6 +1,6 @@
 #include "greedy_disk_clustering.hpp"
 #include "geo_utils.hpp"
-#include "quadtree.hpp"
+#include "shift.hpp"
 
 std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
                                          Strategie_t strategie,
@@ -79,30 +79,33 @@ std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
 
 std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
                                            Strategie_t strategie,
-                                           int remplissage) {
+                                           int remplissage,
+                                           ShiftStrategy strategy_traitement,
+                                           bool global_mean) {
   std::vector<Cluster> clusters;
   int n = users.size();
   if (n == 0)
     return clusters;
 
-  // 1. Initialisation de l'arbre spatial
-  // On définit une zone englobante (Boundary) couvrant les données GPS
+  // Initialisation de l'arbre spatial (World ajusté pour être sûr)
   Boundary world = {0.0, 0.0, 180.0, 90.0};
   Quadtree tree(world);
   for (const auto &u : users) {
     tree.insert(u);
   }
 
-  std::vector<bool> assigned(n + 1, false); // +1 car tes IDs commencent à 1
+  // Permet de savoir qui est déjà dans un cluster ou non
+  std::vector<bool> assigned(n + 1, false);
   int assigned_count = 0;
   int cluster_id_gen = 1;
   double capacite_cible_mbps = (CAP_MAX_GBPS * 1000.0) * (remplissage / 100.0);
 
-  // 2. Boucle principale
+  // Le pivot est le premier utilisateur non assigné
   for (const auto &pivot : users) {
     if (assigned[pivot.id])
       continue;
 
+    // Initialisation du cluster
     Cluster c;
     c.id = cluster_id_gen++;
     c.center_lat = pivot.lat;
@@ -111,33 +114,26 @@ std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
     c.sum_pir = 0.0;
     c.sum_cir = 0.0;
 
-    // 3. Recherche spatiale ciblée
-    // 45km correspondent à environ 0.45 degré (approximation sécurisée)
-    double range_deg = 0.5;
-    Boundary searchRange = {c.center_lon, c.center_lat, range_deg, range_deg};
-
+    // Remplissage initial (Greedy local)
+    Boundary searchRange = {c.center_lon, c.center_lat, 0.5, 0.5};
     std::vector<UserPoint> candidates;
     tree.queryRange(searchRange, candidates);
 
-    // 4. Remplissage parmis les candidats proches uniquement
     for (const auto &cand : candidates) {
       if (assigned[cand.id])
         continue;
 
       double dist = haversine(c.center_lat, c.center_lon, cand.lat, cand.lon);
-
       if (dist <= RAYON_KM) {
-        double charge_ajoutee = 0;
-        if (strategie == PESSIMISTE)
-          charge_ajoutee = cand.pir;
-        else if (strategie == OPTIMISTE)
-          charge_ajoutee = cand.cir;
-        else if (strategie == OVERBOOKING)
-          charge_ajoutee = (0.7 * cand.cir + 0.3 * cand.pir);
+        double charge = (strategie == PESSIMISTE) ? cand.pir
+                        : (strategie == OPTIMISTE)
+                            ? cand.cir
+                            : (0.7 * cand.cir + 0.3 * cand.pir);
 
-        if (c.current_load + charge_ajoutee <= capacite_cible_mbps) {
+        if (c.current_load + charge <= capacite_cible_mbps) {
+          // L'utilisateur respecte les conditions donc on l'ajoute au cluster
           c.users_id.push_back(cand.id);
-          c.current_load += charge_ajoutee;
+          c.current_load += charge;
           c.sum_pir += cand.pir;
           c.sum_cir += cand.cir;
           assigned[cand.id] = true;
@@ -145,10 +141,33 @@ std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
         }
       }
     }
+
+    // Optimisation par Shift (PostTraitement local)
+    if (strategy_traitement != ShiftStrategy::NONE) {
+      // On mémorise combien on avait de points avant
+      int count_before = c.users_id.size();
+
+      applyShiftSingle(c, users, assigned, tree, capacite_cible_mbps, strategie,
+                       strategy_traitement);
+
+      // On ajuste assigned_count en fonction de la différence réelle
+      // (Le Shift peut avoir ajouté ou retiré des points) c'est seulement dans
+      // le cas du mean
+      int count_after = c.users_id.size();
+      assigned_count += (count_after - count_before);
+    }
+    // Ajout du cluster à la liste
     clusters.push_back(c);
 
+    // Sortie anticipée si tout le monde est traité
     if (assigned_count >= n)
       break;
+  }
+
+  // Post-traitement Global
+  if (strategy_traitement == ShiftStrategy::MEAN && global_mean) {
+    applyMeanShift(clusters, users, assigned, tree, capacite_cible_mbps,
+                   strategie);
   }
 
   return clusters;

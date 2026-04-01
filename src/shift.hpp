@@ -10,7 +10,6 @@
 
 #include "csv_read.hpp"
 #include "greedy_disk_clustering.hpp"
-#include "quadtree.hpp"
 #include <vector>
 
 /**
@@ -104,7 +103,8 @@ void applyMeanShiftSingle(Cluster &c, const std::vector<UserPoint> &users,
  * @param capacite_cible_mbps La limite de charge.
  * @param strategie_qos La stratégie de QoS.
  */
-void applyMeanShift(Cluster &c, const std::vector<UserPoint> &users,
+void applyMeanShift(std::vector<Cluster> &clusters,
+                    const std::vector<UserPoint> &users,
                     std::vector<bool> &assigned, const Quadtree &tree,
                     double capacite_cible_mbps, Strategie_t strategie_qos);
 

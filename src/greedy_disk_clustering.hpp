@@ -13,6 +13,7 @@
 #define GREEDY_DISK_CLUSTERING_HPP
 
 #include "csv_read.hpp"
+#include "quadtree.hpp"
 #include <vector>
 
 #define CAP_MAX_GBPS 3.0
@@ -28,6 +29,8 @@ enum Strategie_t {
   OVERBOOKING // Somme alpha CIR + beta PIR <= Capacité du cluster (alpha + beta
               // = 1)
 };
+
+enum class ShiftStrategy;
 
 /**
  * @brief Structure pour stocker les données d'un cluster.
@@ -65,10 +68,14 @@ std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
  * * @param users Liste des points utilisateurs.
  * @param strategie Choix de la métrique de charge.
  * @param remplissage Pourcentage max de charge cible.
+ * @param strategy_traitement Choix de la stratégie de traitement.
+ * @param global_mean Permet de lancer un posttraitement global.
  * @return std::vector<Cluster> Vecteur de clusters optimisés.
  */
 std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
                                            Strategie_t strategie,
-                                           int remplissage);
+                                           int remplissage,
+                                           ShiftStrategy strategy_traitement,
+                                           bool global_mean);
 
 #endif // GREEDY_DISK_CLUSTERING_HPP
