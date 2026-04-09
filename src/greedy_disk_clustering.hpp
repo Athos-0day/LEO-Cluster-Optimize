@@ -56,11 +56,13 @@ struct Cluster {
  * @param users Liste des points utilisateurs chargés depuis le CSV.
  * @param strategie Choix de la métrique de charge (PIR, CIR ou mixte).
  * @param remplissage Pourcentage max de charge cible (ex: 80 pour 80%).
+ * @param use_merge Permet de lancer un posttraitement de fusion de clusters.
  * @return std::vector<Cluster> Vecteur de clusters optimisés.
  */
 std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
                                          Strategie_t strategie,
-                                         int remplissage);
+                                         int remplissage,
+                                         bool use_merge);
 
 /**
  * @brief Algorithme de clustering optimisé par Quadtree.
@@ -73,12 +75,13 @@ std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
  * @param global_mean Permet de lancer un posttraitement global.
  * @param hilbert permet de trier spatialement les données sur la courbe de
  * hilbert.
+ * @param use_merge Permet de lancer un posttraitement de fusion de clusters.
  * @return std::vector<Cluster> Vecteur de clusters optimisés.
  */
 std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
                                            Strategie_t strategie,
                                            int remplissage,
                                            ShiftStrategy strategy_traitement,
-                                           bool global_mean, bool hilbert);
+                                           bool global_mean, bool hilbert, bool use_merge);
 
 #endif // GREEDY_DISK_CLUSTERING_HPP
