@@ -23,6 +23,6 @@
  * @return les données sous forme fichier csv contant les users
  *
  */
-void on_to_tow(std::vector<UserPoint> users, std::string fileDataInit, std::string fileDataTest, float proportion);
+void one_to_tow(std::vector<UserPoint> users, std::string fileDataInit, std::string fileDataTest, float proportion);
 
 #endif

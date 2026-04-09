@@ -70,12 +70,32 @@ std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
  * @param remplissage Pourcentage max de charge cible.
  * @param strategy_traitement Choix de la stratégie de traitement.
  * @param global_mean Permet de lancer un posttraitement global.
+ * @param clusters la liste (vide ou non de clusters a utiliser)
  * @return std::vector<Cluster> Vecteur de clusters optimisés.
  */
 std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
                                            Strategie_t strategie,
                                            int remplissage,
                                            ShiftStrategy strategy_traitement,
-                                           bool global_mean);
+                                           bool global_mean,
+                                          std::vector<Cluster> &clusters);
+
+
+/**
+ * @brief Algorithme de clustering optimisé par Quadtree, qui complete les clusters et en creer de nouveaux clusters si besoin.
+ * * Cette version utilise une structure spatiale pour limiter la recherche des
+ * voisins aux zones adjacentes. La complexité passe de O(N*K) à O(N log N).
+ * * @param users Liste des points utilisateurs.
+ * @param strategie Choix de la métrique de charge.
+ * @param strategy_traitement Choix de la stratégie de traitement.
+ * @param global_mean Permet de lancer un posttraitement global.
+ * @param clusters la liste (vide ou non de clusters a utiliser)
+ * @return std::vector<Cluster> Vecteur de clusters optimisés.
+ */
+std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
+                                           Strategie_t strategie,
+                                           ShiftStrategy strategy_traitement,
+                                           bool global_mean,
+                                          std::vector<Cluster> &clusters);
 
 #endif // GREEDY_DISK_CLUSTERING_HPP

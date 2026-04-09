@@ -80,7 +80,7 @@ std::vector<UserPoint> CsvToUser(const std::string &filename, bool write, const 
 }
 
 
-std::vector<UserPoint> CsvToUser(const std::string &filename) {
+std::vector<UserPoint> CsvIdToUser(const std::string &filename) {
   std::vector<UserPoint> users;
   std::ifstream file(filename);
 

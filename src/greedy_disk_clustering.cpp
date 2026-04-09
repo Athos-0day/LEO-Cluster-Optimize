@@ -81,8 +81,8 @@ std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
                                            Strategie_t strategie,
                                            int remplissage,
                                            ShiftStrategy strategy_traitement,
-                                           bool global_mean) {
-  std::vector<Cluster> clusters;
+                                           bool global_mean, std::vector<Cluster> &clusters) {
+  //std::vector<Cluster> clusters;
   int n = users.size();
   if (n == 0)
     return clusters;
