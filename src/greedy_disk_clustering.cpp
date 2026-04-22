@@ -2,10 +2,129 @@
 #include "geo_utils.hpp"
 #include "shift.hpp"
 #include <numeric>
+#include <unordered_map>
+
+static bool mergeRespectRadius(const Cluster &ci, const Cluster &cj,
+                                const std::vector<UserPoint> &users,
+                                double new_lat, double new_lon,
+                                const std::unordered_map<int, int> &id_to_idx) {
+    for (int uid : ci.users_id) {
+        auto it = id_to_idx.find(uid);
+        if (it == id_to_idx.end()) continue;
+        if (haversine(new_lat, new_lon,
+                      users[it->second].lat,
+                      users[it->second].lon) > RAYON_KM)
+            return false;
+    }
+    for (int uid : cj.users_id) {
+        auto it = id_to_idx.find(uid);
+        if (it == id_to_idx.end()) continue;
+        if (haversine(new_lat, new_lon,
+                      users[it->second].lat,
+                      users[it->second].lon) > RAYON_KM)
+            return false;
+    }
+    return true;
+}
+
+std::vector<Cluster> mergeClusters(std::vector<Cluster> clusters,
+                                   const std::vector<UserPoint> &users,
+                                   double capacite_cible_mbps,
+                                   Strategie_t strategie) {
+
+    // Construire la map id -> index une seule fois
+    std::unordered_map<int, int> id_to_idx;
+    id_to_idx.reserve(users.size());
+    for (int i = 0; i < (int)users.size(); ++i)
+        id_to_idx[users[i].id] = i;
+
+    bool merged = true;
+    while (merged) {
+        merged = false;
+
+        Boundary world = {0.0, 0.0, 180.0, 90.0};
+        Quadtree tree(world);
+        for (size_t i = 0; i < clusters.size(); ++i) {
+            UserPoint p;
+            p.id  = (int)i;
+            p.lat = clusters[i].center_lat;
+            p.lon = clusters[i].center_lon;
+            tree.insert(p);
+        }
+
+        std::vector<bool> to_remove(clusters.size(), false);
+
+        for (size_t i = 0; i < clusters.size(); ++i) {
+            if (to_remove[i]) continue;
+
+            double lat_rad   = clusters[i].center_lat * M_PI / 180.0;
+            double range_lat = (RAYON_KM * 2.0) / 111.0;
+            double range_lon = (RAYON_KM * 2.0) / (111.0 * std::cos(lat_rad));
+
+            Boundary range = {clusters[i].center_lon, clusters[i].center_lat,
+                              range_lon, range_lat};
+
+            std::vector<UserPoint> candidates;
+            tree.queryRange(range, candidates);
+
+            double load_i = (strategie == PESSIMISTE) ? clusters[i].sum_pir
+                          : (strategie == OPTIMISTE)  ? clusters[i].sum_cir
+                          : 0.7 * clusters[i].sum_cir + 0.3 * clusters[i].sum_pir;
+
+            for (const auto &cand : candidates) {
+                size_t j = (size_t)cand.id;
+                if (j == i || to_remove[j]) continue;
+
+                double dist = haversine(clusters[i].center_lat, clusters[i].center_lon,
+                                        clusters[j].center_lat, clusters[j].center_lon);
+                if (dist > RAYON_KM * 2.0) continue;
+
+                double load_j = (strategie == PESSIMISTE) ? clusters[j].sum_pir
+                              : (strategie == OPTIMISTE)  ? clusters[j].sum_cir
+                              : 0.7 * clusters[j].sum_cir + 0.3 * clusters[j].sum_pir;
+
+                if (load_i + load_j > capacite_cible_mbps) continue;
+
+                size_t ni = clusters[i].users_id.size();
+                size_t nj = clusters[j].users_id.size();
+                double new_lat = (clusters[i].center_lat * ni +
+                                  clusters[j].center_lat * nj) / (ni + nj);
+                double new_lon = (clusters[i].center_lon * ni +
+                                  clusters[j].center_lon * nj) / (ni + nj);
+
+                if (!mergeRespectRadius(clusters[i], clusters[j],
+                                        users, new_lat, new_lon, id_to_idx))
+                    continue;
+
+                clusters[i].center_lat  = new_lat;
+                clusters[i].center_lon  = new_lon;
+                clusters[i].users_id.insert(clusters[i].users_id.end(),
+                                            clusters[j].users_id.begin(),
+                                            clusters[j].users_id.end());
+                clusters[i].sum_pir     += clusters[j].sum_pir;
+                clusters[i].sum_cir     += clusters[j].sum_cir;
+                clusters[i].current_load = load_i + load_j;
+                load_i                  += load_j;
+
+                to_remove[j] = true;
+                merged = true;
+            }
+        }
+
+        std::vector<Cluster> next;
+        next.reserve(clusters.size());
+        for (size_t i = 0; i < clusters.size(); ++i)
+            if (!to_remove[i])
+                next.push_back(std::move(clusters[i]));
+        clusters = std::move(next);
+    }
+    return clusters;
+}
 
 std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
                                          Strategie_t strategie,
-                                         int remplissage) {
+                                         int remplissage,
+                                         bool use_merge) {
   // Initialisation de la liste de cluster
   std::vector<Cluster> clusters;
   int n = users.size();
@@ -74,7 +193,7 @@ std::vector<Cluster> runGreedyClustering(const std::vector<UserPoint> &users,
     }
     clusters.push_back(c);
   }
-
+  if (use_merge) clusters = mergeClusters(clusters , users, capacite_cible_mbps, strategie);
   return clusters;
 }
 
@@ -82,7 +201,8 @@ std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
                                            Strategie_t strategie,
                                            int remplissage,
                                            ShiftStrategy strategy_traitement,
-                                           bool global_mean, bool use_hilbert) {
+                                           bool global_mean, bool use_hilbert,
+                                           bool use_merge) {
   std::vector<Cluster> clusters;
   int n = users.size();
   if (n == 0)
@@ -171,6 +291,8 @@ std::vector<Cluster> runQuadtreeClustering(const std::vector<UserPoint> &users,
     applyMeanShift(clusters, users, assigned, tree, capacite_cible_mbps,
                    strategie);
   }
+
+  if (use_merge) clusters = mergeClusters(clusters , users, capacite_cible_mbps, strategie);
 
   return clusters;
 }
