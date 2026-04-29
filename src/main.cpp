@@ -95,7 +95,6 @@ int main() {
   std::cout << std::string(106, '-') << std::endl;
 
   std::vector<ResultRow> all_results;
-  std::vector<ResultRow> greedy_results;
 
   // Greedy Tests
   std::cout << "\n--- Greedy ---" << std::endl;
@@ -122,7 +121,7 @@ int main() {
                 << metrics.memory_footprint_kb << std::setw(10)
                 << duration.count() << std::endl;
  
-      greedy_results.push_back({"Greedy", str_names[s], fill, "N/A",
+      all_results.push_back({"Greedy", str_names[s], fill, "N/A",
                                  false, metrics.nb_clusters,
                                  metrics.avg_fill_rate_percent,
                                  metrics.avg_distance_km,
@@ -131,8 +130,6 @@ int main() {
     }
   }
   std::cout << std::string(106, '-') << std::endl;
- 
-  saveResultsToCSV(greedy_results, "resultats_greedy.csv");
 
   // Quadtree Tests
   for (bool use_hilbert : hilbert_options) {

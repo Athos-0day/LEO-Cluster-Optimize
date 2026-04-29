@@ -1,7 +1,0 @@
-Algo,Strategie,Cap%,Post-Trait,Hilbert,Clusters,Rempli(%),Dist_Moy(km),Mem(Ko),Temps(ms)
-Greedy,Pessimiste,80,N/A,NON,21303,24.27,20.96,2647.73,147939.34
-Greedy,Pessimiste,100,N/A,NON,20975,19.72,21.06,2647.73,145201.76
-Greedy,Optimiste,80,N/A,NON,20805,2.14,21.10,2647.73,144757.40
-Greedy,Optimiste,100,N/A,NON,20805,1.71,21.10,2647.73,143419.59
-Greedy,Overbooking,80,N/A,NON,20805,8.95,21.10,2647.73,181998.81
-Greedy,Overbooking,100,N/A,NON,20805,7.16,21.10,2647.73,147779.40
